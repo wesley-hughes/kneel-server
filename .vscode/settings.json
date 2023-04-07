@@ -1,0 +1,7 @@
+{
+   "python.formatting.autopep8Path": "/Users/wesleyhughes/.local/share/virtualenvs/kneel-server-c-zxnGaU/bin/autopep8",
+   "python.linting.pylintEnabled": true,
+   "python.analysis.diagnosticSeverityOverrides": {
+     "reportGeneralTypeIssues": "none"
+   }
+}
