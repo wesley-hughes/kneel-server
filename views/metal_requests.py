@@ -16,4 +16,4 @@ def get_single_metal(id):
         if metal["id"] == id:
             requested_metal = metal
 
-        return requested_metal
+    return requested_metal

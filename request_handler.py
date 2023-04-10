@@ -31,7 +31,7 @@ class HandleRequests(BaseHTTPRequestHandler):
 
     def do_GET(self):
         """Handles GET requests to the server """
-        self._set_headers(200)
+        
 
         response = {}  # Default response
 
@@ -41,7 +41,13 @@ class HandleRequests(BaseHTTPRequestHandler):
         if resource == "metals":
             if id is not None:
                 response = get_single_metal(id)
+                if response is not None:
+                    self._set_headers(200)
+                else:
+                    self._set_headers(404)
+                    response = { "message": "That metal is not currently in stock"}
             else:
+                self._set_headers(200)
                 response = get_all_metals()
         if resource == "styles":
             if id is not None:
@@ -61,8 +67,15 @@ class HandleRequests(BaseHTTPRequestHandler):
         if resource == "orders":
             if id is not None:
                 response = get_single_order(id)
+                if response is not None:
+                    self._set_headers(200)
+                else:
+                    self._set_headers(404)
+                    response= { "message": "That order was never placed or was cancelled"}
             else:
+                self._set_headers(200)
                 response = get_all_orders()
+
         self.wfile.write(json.dumps(response).encode())
 
     def do_POST(self):
@@ -75,11 +88,14 @@ class HandleRequests(BaseHTTPRequestHandler):
         new_order = None
         if resource == "orders":
             new_order = create_order(post_body)
+            if "metalId" in post_body and "sizeId" in post_body and "styleId" in post_body and "typeId" in post_body:
+                self._set_headers(201)
+                new_order = new_order(post_body)
+            else:
+                self._set_headers(400)
+                new_order = {"message": f'{"metal required" if "metalId" not in post_body else ""} {"size required" if "sizeId" not in post_body else ""} {"style required" if "styleId" not in post_body else ""} {"type required" if "typeId" not in post_body else ""}'}
         self.wfile.write(json.dumps(new_order).encode())
 
-    def do_PUT(self):
-        """Handles PUT requests to the server """
-        self.do_POST()
 
     def _set_headers(self, status):
         """Sets the status code, Content-Type and Access-Control-Allow-Origin
@@ -113,13 +129,14 @@ class HandleRequests(BaseHTTPRequestHandler):
         self.wfile.write("".encode())
     def do_PUT(self):
         '''docstring'''
-        self._set_headers(204)
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
         post_body = json.loads(post_body)
         (resource, id) = self.parse_url(self.path)
         if resource == "orders":
-            update_order(id, post_body)
+            self._set_headers(405)
+            response = {"message": "unable to modify order once complete"}
+            self.wfile.write(json.dumps(response).encode())
         self.wfile.write("".encode())
 
 def main():
