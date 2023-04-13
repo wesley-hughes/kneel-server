@@ -7,13 +7,35 @@ METALS = [
 ]
 
 def get_all_metals():
-    '''this gets all metals'''
     return METALS
+
 def get_single_metal(id):
-    '''this gets single metal by id'''
     requested_metal = None
+
     for metal in METALS:
         if metal["id"] == id:
             requested_metal = metal
+            return requested_metal
+        
+def create_metal(metal):
+    max_id = METALS[-1]["id"]
+    new_id = max_id + 1
+    metal["id"] = new_id
+    METALS.append(metal)
+    return metal
 
-    return requested_metal
+def update_metal(id, new_metal):
+    for index, metal in enumerate(METALS):
+        if metal["id"] == id:
+            METALS[index] = new_metal
+            break
+
+def delete_metal(id):
+    metal_index = -1
+    
+    for index, metal in enumerate(METALS):
+        if metal["id"] == id:
+            metal_index = index
+            
+    if metal_index >= 0:
+        METALS.pop(metal_index)
