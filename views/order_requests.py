@@ -1,7 +1,6 @@
 from .metal_requests import get_single_metal
 from .size_requests import get_single_size
 from .style_requests import get_single_style
-from .type_requests import get_single_type
 ORDERS = [
     {
         "id": 1,
