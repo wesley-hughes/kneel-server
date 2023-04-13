@@ -31,7 +31,7 @@ class HandleRequests(BaseHTTPRequestHandler):
         response = None
         (resource, id, query_params) = self.parse_url(self.path)
         if id is not None:
-            response = retrieve(resource.upper(), id)
+            response = retrieve(resource.upper(), id, query_params)
         else:
             response = all(resource.upper())
         self.wfile.write(json.dumps(response).encode())

@@ -54,27 +54,33 @@ DATABASE = {
 def all(resources):
     '''return all of given resource'''
     return DATABASE[resources]
-def retrieve(resources, id):
+def retrieve(resources, id, query_params):
     '''return specific instance of resource by id'''
     requested_resource = None
     for resource in DATABASE[resources]:
         if resource["id"] == id:
             if resources == "ORDERS":
-                requested_resource = resource.copy()
-                matched_size = retrieve("SIZES", requested_resource["sizeId"])
-                requested_resource["size"] = matched_size
-                matched_metal = retrieve("METALS", requested_resource["metalId"])
-                requested_resource["metal"] = matched_metal
-                matched_style = retrieve("STYLES", requested_resource["styleId"])
-                requested_resource["style"] = matched_style
+                requested_resource = resource.copy()              
                 price = 0
-                price += requested_resource["metal"]["price"] + requested_resource["size"]["price"] + requested_resource["style"]["price"]
+                for query in query_params:
+                    if query == "sizes":
+                        matched_size = retrieve("SIZES", requested_resource["sizeId"], query)
+                        requested_resource["size"] = matched_size
+                        price += requested_resource["size"]["price"]
+                    if query == "metals":
+                        matched_metal = retrieve("METALS", requested_resource["metalId"], query)
+                        requested_resource["metal"] = matched_metal
+                        price += requested_resource["metal"]["price"]
+                    if query == "styles":
+                        matched_style = retrieve("STYLES", requested_resource["styleId"], query)
+                        requested_resource["style"] = matched_style
+                        price += requested_resource["style"]["price"]               
                 requested_resource["price"] = price
             else:
                 requested_resource = resource.copy()
     return requested_resource
 def create(resources, resource):
-    '''for POST requests to a collection'''
+    '''for POST requests to a collection'''›‹
     max_id = DATABASE[resources][-1]["id"]
     new_id = max_id + 1
     resource["id"] = new_id
