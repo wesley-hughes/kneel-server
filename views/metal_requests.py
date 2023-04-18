@@ -1,3 +1,6 @@
+import sqlite3
+import json
+from models import Order, Metal, Size, Style
 METALS = [
     { "id": 1, "metal": "Sterling Silver", "price": 12.42 },
     { "id": 2, "metal": "14K Gold", "price": 736.4 },
@@ -7,7 +10,22 @@ METALS = [
 ]
 
 def get_all_metals():
-    return METALS
+    with sqlite3.connect("./kneeldiamonds.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+        db_cursor.execute("""
+        SELECT
+            m.id,
+            m.metal,
+            m.price
+        FROM Metals m
+        """)
+        metals = []
+        dataset = db_cursor.fetchall()
+        for row in dataset:
+            metal = Metal(row['id'], row['metal'], row['price'])
+            metals.append(metal.__dict__)
+        return metals
 
 def get_single_metal(id):
     requested_metal = None
@@ -25,10 +43,26 @@ def create_metal(metal):
     return metal
 
 def update_metal(id, new_metal):
-    for index, metal in enumerate(METALS):
-        if metal["id"] == id:
-            METALS[index] = new_metal
-            break
+    with sqlite3.connect("./kneeldiamonds.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Metals
+            SET
+                price = ?
+        WHERE id = ?
+        """, (new_metal['price'], id, ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
+    else:
+        # Forces 204 response by main module
+        return True
 
 def delete_metal(id):
     metal_index = -1
