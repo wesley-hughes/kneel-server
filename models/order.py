@@ -1,9 +1,8 @@
 class Order():
     '''creates class'''
-    def __init__(self, id, metalId, styleId, sizeId, typeId, timestamp):
+    def __init__(self, id, metal_id, style_id, size_id, timestamp):
         self.id = id
-        self.metalId = metalId
-        self.styleId = styleId
-        self.sizeId = sizeId
-        self.typeId = typeId
-        self.timestamp = timestamp
+        self.metal_id = metal_id
+        self.style_id = style_id
+        self.size_id = size_id
+        self.timestamp = ""

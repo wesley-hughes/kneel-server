@@ -1,37 +1,58 @@
+import sqlite3
+import json
+from models import Order, Metal, Size, Style
 ORDERS = [
     {
         "id": 1,
-        "metalId": 1,
-        "sizeId": 2,
-        "styleId": 3,
+        "metal_id": 1,
+        "size_id": 2,
+        "style_id": 3,
         "timestamp": 1614659931693
     },
     {
         "id": 2,
-        "metalId": 2,
-        "sizeId": 3,
-        "styleId": 1,
+        "metal_id": 2,
+        "size_id": 3,
+        "style_id": 1,
         "timestamp": 1616333988188
     },
     {
         "id": 3,
-        "metalId": 3,
-        "sizeId": 1,
-        "styleId": 2,
+        "metal_id": 3,
+        "size_id": 1,
+        "style_id": 2,
         "timestamp": 1616334884289
     },
     {
         "id": 4,
-        "metalId": 1,
-        "sizeId": 3,
-        "styleId": 2,
+        "metal_id": 1,
+        "size_id": 3,
+        "style_id": 2,
         "timestamp": 1616334980694
     }
 ]
 
 def get_all_orders():
-    return ORDERS
-
+    '''retrieve all orders from database'''
+    with sqlite3.connect("./kneel.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+        db_cursor.execute("""
+        SELECT
+            o.id,
+            o.metal_id,
+            o.size_id,
+            o.style_id,
+            o.timestamp
+        FROM Order o
+        """)
+        orders = []
+        dataset = db_cursor.fetchall()
+        for row in dataset:
+            order = Order(row['id'], row['metal_id'], row['size_id'], row['style_id'], row['timestamp'])
+            orders.append(order.__dict__)
+        return orders
+    
 def get_single_order(id):
     requested_order = None
     
