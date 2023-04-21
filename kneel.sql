@@ -70,3 +70,10 @@ SELECT
     m.price
 FROM Orders o
 JOIN Metals m ON m.id = o.metal_id;
+
+SELECT
+    m.id,
+    m.metal,
+    m.price
+FROM Metals m
+ORDER BY price;

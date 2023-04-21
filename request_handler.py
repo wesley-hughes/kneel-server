@@ -44,38 +44,32 @@ class HandleRequests(BaseHTTPRequestHandler):
         self._set_headers(200)
         response = {}
         
-        parsed = self.parse_url(self.path)
 
-        if '?' not in self.path:
-            (resource, id) = parsed
-            if resource == "metals":
-                if id is not None:
-                    response = get_single_metal(id)
-                else:
-                    response = get_all_metals()
-                
-            elif resource == "styles":
-                if id is not None:
-                    response = get_single_style(id)
-                else:
-                    response = get_all_styles()
-        
-            elif resource == "sizes":
-                if id is not None:
-                    response = get_single_size(id)
-                else:
-                    response = get_all_sizes()
-                
-            elif resource == "orders":
-                if id is not None:
-                    response = get_single_order(id)
-                else:
-                    response = get_all_orders()
-
+        (resource, id, query_params) = self.parse_url(self.path)
+        if resource == "metals":
+            if id is not None:
+                response = get_single_metal(id)
             else:
-                (resource, query) = parsed
-        else:
-            (resource, query) = parsed
+                response = get_all_metals(query_params)
+            
+        elif resource == "styles":
+            if id is not None:
+                response = get_single_style(id)
+            else:
+                response = get_all_styles(query_params)
+    
+        elif resource == "sizes":
+            if id is not None:
+                response = get_single_size(id)
+            else:
+                response = get_all_sizes(query_params)
+            
+        elif resource == "orders":
+            if id is not None:
+                response = get_single_order(id)
+            else:
+                response = get_all_orders()
+
 
         self.wfile.write(json.dumps(response).encode())
 
@@ -85,7 +79,7 @@ class HandleRequests(BaseHTTPRequestHandler):
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
         post_body = json.loads(post_body)
-        (resource, id) = self.parse_url(self.path)
+        (resource, id, query_params) = self.parse_url(self.path)
         new_resource = None
         
         if resource == "metals":
@@ -106,7 +100,7 @@ class HandleRequests(BaseHTTPRequestHandler):
         post_body = self.rfile.read(content_len)
         post_body = json.loads(post_body)
         
-        (resource, id) = self.parse_url(self.path)
+        (resource, id, query_params) = self.parse_url(self.path)
         
         if resource == "metals":
             update_metal(id, post_body)
@@ -121,7 +115,7 @@ class HandleRequests(BaseHTTPRequestHandler):
         
     def do_DELETE(self):
         self._set_headers(204)
-        (resource, id) = self.parse_url(self.path)
+        (resource, id, query_params) = self.parse_url(self.path)
         
         if resource == "metals":
             delete_metal(id)
@@ -156,21 +150,24 @@ class HandleRequests(BaseHTTPRequestHandler):
         self.end_headers()
 
     def parse_url(self, path):
-        """Parse the url into the resource and id"""
-        parsed_url = urlparse(path)
-        path_params = parsed_url.path.split('/')  # ['', 'animals', 1]
-        resource = path_params[1]
+        url_components = urlparse(path)
+        path_params = url_components.path.strip("/").split("/")
+        query_params = []
 
-        if parsed_url.query:
-            query = parse_qs(parsed_url.query)
-            return (resource, query)
+        if url_components.query != '':
+            query_params = url_components.query.split("&")
 
-        pk = None
+        resource = path_params[0]
+        id = None
+
         try:
-            pk = int(path_params[2])
-        except (IndexError, ValueError):
-            pass
-        return (resource, pk)
+            id = int(path_params[1])
+        except IndexError:
+            pass  # No route parameter exists: /animals
+        except ValueError:
+            pass  # Request had trailing slash: /animals/
+
+        return (resource, id, query_params)
 
 # point of this application.
 def main():
